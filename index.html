@@ -53,6 +53,27 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
 .e-row{display:flex;gap:8px}
 .e-row .e-field{flex:1}
 
+.logo-drop{
+  width:100%;background:#0d1117;border:1.5px dashed #1e2940;
+  border-radius:7px;padding:10px 8px;text-align:center;cursor:pointer;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.logo-drop:hover{border-color:#3b82f6;background:rgba(37,99,235,.04)}
+.logo-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.logo-drop-inner{display:flex;align-items:center;justify-content:center;gap:8px;pointer-events:none}
+.logo-drop-icon{font-size:1.1rem}
+.logo-drop-txt{font-size:.72rem;color:#475569}
+.logo-drop-txt strong{display:block;color:#64748b;font-size:.7rem}
+.logo-preview{display:none;max-height:36px;max-width:120px;object-fit:contain;border-radius:4px}
+.logo-drop.has-logo .logo-drop-inner{display:none}
+.logo-drop.has-logo .logo-preview{display:block}
+.remove-logo{
+  width:100%;background:transparent;border:1px dashed #1e2940;color:#475569;
+  border-radius:6px;padding:4px;font-size:.67rem;cursor:pointer;margin-top:3px;
+  transition:all .2s;font-family:'Inter',sans-serif;display:none;
+}
+.remove-logo:hover{border-color:#ef4444;color:#f87171;background:rgba(239,68,68,.05)}
+
 .gen-btn{
   width:100%;background:transparent;border:1px dashed #1e2940;color:#475569;
   border-radius:6px;padding:5px;font-size:.67rem;cursor:pointer;margin-top:3px;
@@ -192,6 +213,18 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
         <label>Color</label>
         <input type="color" id="eBrandColor" value="#00BFA5">
       </div>
+    </div>
+    <div class="e-field">
+      <label>Logo Image</label>
+      <div class="logo-drop" id="logoDropZone">
+        <input type="file" id="eLogoFile" accept="image/*">
+        <div class="logo-drop-inner">
+          <span class="logo-drop-icon">🖼</span>
+          <div class="logo-drop-txt">Click to upload logo<strong>PNG, JPG, SVG, WebP</strong></div>
+        </div>
+        <img class="logo-preview" id="logoPreview" alt="logo">
+      </div>
+      <button class="remove-logo" id="removeLogoBtn" onclick="clearLogo()">✕ Remove logo</button>
     </div>
     <div class="e-field">
       <label>Receipt Title</label>
@@ -371,6 +404,32 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
 </main>
 
 <script>
+// ── LOGO UPLOAD ──
+let uploadedLogo = null;
+
+document.getElementById('eLogoFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    uploadedLogo = evt.target.result;
+    document.getElementById('logoPreview').src = uploadedLogo;
+    document.getElementById('logoDropZone').classList.add('has-logo');
+    document.getElementById('removeLogoBtn').style.display = 'block';
+    update();
+  };
+  reader.readAsDataURL(file);
+});
+
+function clearLogo() {
+  uploadedLogo = null;
+  document.getElementById('eLogoFile').value = '';
+  document.getElementById('logoPreview').src = '';
+  document.getElementById('logoDropZone').classList.remove('has-logo');
+  document.getElementById('removeLogoBtn').style.display = 'none';
+  update();
+}
+
 const STATUS_CLASS = {
   Successful:'status-successful',
   Failed:'status-failed',
@@ -411,11 +470,29 @@ function buildWM(name, color) {
 }
 
 function applyColor(c) {
-  document.getElementById('rIcon').style.borderColor = c;
-  document.getElementById('rIcon').style.color = c;
+  const icon = document.getElementById('rIcon');
+  if (!uploadedLogo) {
+    icon.style.borderColor = c;
+    icon.style.color = c;
+    icon.style.background = 'transparent';
+  }
   document.getElementById('rAmount').style.color = c;
   document.querySelectorAll('#rWM span').forEach(s=>s.style.color=c);
-  // serrations stay dark — correct behavior
+}
+
+function applyLogo(color) {
+  const icon = document.getElementById('rIcon');
+  if (uploadedLogo) {
+    icon.innerHTML = `<img src="${uploadedLogo}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;display:block">`;
+    icon.style.border = 'none';
+    icon.style.background = 'transparent';
+    icon.style.color = 'transparent';
+  } else {
+    icon.innerHTML = '↻';
+    icon.style.border = `2.5px solid ${color}`;
+    icon.style.color = color;
+    icon.style.background = 'transparent';
+  }
 }
 
 function update() {
@@ -441,6 +518,7 @@ function update() {
   document.getElementById('rTitle').textContent = title;
   buildWM(brand, color);
   applyColor(color);
+  applyLogo(color);
 
   // Amount
   document.getElementById('rAmount').textContent = cur + amt;
