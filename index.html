@@ -122,7 +122,7 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
 }
 
 /* Receipt body */
-.r-body{padding:22px 24px 20px;background:#fff;position:relative;overflow:hidden}
+.r-body{padding:22px 24px 20px;background:#fff;position:relative;overflow:hidden;font-family:'Inter',sans-serif;font-size:14px}
 
 /* Watermark overlay */
 .r-wm{
@@ -136,19 +136,19 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
   width:220%;
 }
 .r-wm span{
-  font-size:1.05rem;font-weight:700;
+  font-size:1rem;font-weight:700;
   padding:10px 14px;white-space:nowrap;
   color:#00BFA5;line-height:2;
 }
 
 /* Receipt header */
-.r-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.r-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .r-brand{display:flex;align-items:center;gap:7px}
 .r-brand-icon{
-  width:42px;height:42px;border-radius:50%;
-  border:2.5px solid #00BFA5;color:#00BFA5;
+  width:36px;height:36px;border-radius:50%;
+  border:2px solid #00BFA5;color:#00BFA5;
   display:flex;align-items:center;justify-content:center;
-  font-size:1.05rem;font-weight:800;line-height:1;
+  font-size:.9rem;font-weight:800;line-height:1;
   flex-shrink:0;overflow:hidden;
 }
 /* When a real logo image is shown, switch to a flexible auto-width container */
@@ -158,13 +158,13 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
   padding:0;
 }
 .r-brand-icon.has-img img{width:auto;height:100%;max-width:130px;object-fit:contain;display:block}
-.r-brand-name{font-size:1.05rem;font-weight:700;color:#111;letter-spacing:-.01em}
-.r-receipt-title{font-size:.82rem;font-weight:500;color:#111}
+.r-brand-name{font-size:.9rem;font-weight:700;color:#111;letter-spacing:-.01em}
+.r-receipt-title{font-size:.75rem;font-weight:500;color:#111}
 
 /* Amount */
-.r-amount{font-size:2.3rem;font-weight:700;color:#00BFA5;text-align:center;line-height:1;letter-spacing:-.02em}
-.r-status{font-size:.95rem;font-weight:500;color:#111;text-align:center;margin-top:6px}
-.r-date{font-size:.75rem;color:#9ca3af;text-align:center;margin-top:3px;margin-bottom:18px}
+.r-amount{font-size:1.9rem;font-weight:700;color:#00BFA5;text-align:center;line-height:1;letter-spacing:-.02em}
+.r-status{font-size:.82rem;font-weight:500;color:#111;text-align:center;margin-top:5px}
+.r-date{font-size:.7rem;color:#9ca3af;text-align:center;margin-top:3px;margin-bottom:16px}
 
 .status-successful{color:#059669}
 .status-failed{color:#dc2626}
@@ -179,16 +179,16 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
 /* Detail rows */
 .r-row{
   display:flex;justify-content:space-between;align-items:flex-start;
-  padding:9px 0;gap:12px;
+  padding:7px 0;gap:12px;
 }
-.r-lbl{font-size:.76rem;color:#9ca3af;font-weight:400;flex-shrink:0;min-width:90px;padding-top:1px}
+.r-lbl{font-size:.7rem;color:#9ca3af;font-weight:400;flex-shrink:0;min-width:90px;padding-top:1px}
 .r-val{text-align:right;flex:1;min-width:0}
-.r-val-name{font-size:.8rem;font-weight:700;color:#111;word-break:break-word}
-.r-val-sub{font-size:.72rem;color:#6b7280;margin-top:1px}
-.r-val-mono{font-size:.72rem;color:#111;word-break:break-all;font-variant-numeric:tabular-nums}
+.r-val-name{font-size:.75rem;font-weight:700;color:#111;word-break:break-word}
+.r-val-sub{font-size:.68rem;color:#6b7280;margin-top:1px}
+.r-val-mono{font-size:.68rem;color:#111;word-break:break-all;font-variant-numeric:tabular-nums}
 
 /* Footer */
-.r-footer{font-size:.67rem;color:#6b7280;line-height:1.65;margin-top:4px}
+.r-footer{font-size:.62rem;color:#6b7280;line-height:1.65;margin-top:4px}
 
 /* ── MOBILE ── */
 @media(max-width:780px){
