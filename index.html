@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Inter',sans-serif;overflow-x:hidden}
+
+body{display:flex;background:#0d1117;color:#e2e8f0}
+
+/* ── EDITOR ── */
+.editor{
+  width:320px;min-width:280px;height:100vh;overflow-y:auto;
+  background:#161b27;border-right:1px solid #1e2940;
+  padding:22px 18px;flex-shrink:0;
+}
+.editor::-webkit-scrollbar{width:4px}
+.editor::-webkit-scrollbar-track{background:transparent}
+.editor::-webkit-scrollbar-thumb{background:#2d3748;border-radius:4px}
+
+.e-logo{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.e-logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#fff}
+.e-logo-name{font-size:1rem;font-weight:700;color:#f0f6ff}
+.e-logo-sub{font-size:.65rem;color:#475569;margin-left:auto;font-weight:500}
+
+.e-sec{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #1e2940}
+.e-sec:last-of-type{border-bottom:none;padding-bottom:0}
+.e-sec-label{font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3b5280;margin-bottom:10px}
+
+.e-field{margin-bottom:9px}
+.e-field label{display:block;font-size:.7rem;font-weight:600;color:#64748b;margin-bottom:3px}
+.e-field input[type=text],
+.e-field input[type=datetime-local],
+.e-field select,
+.e-field textarea{
+  width:100%;background:#0d1117;border:1px solid #1e2940;color:#cbd5e1;
+  border-radius:7px;padding:7px 10px;font-size:.78rem;font-family:'Inter',sans-serif;
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.e-field input:focus,.e-field select:focus,.e-field textarea:focus{
+  border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+.e-field textarea{resize:vertical;min-height:64px;line-height:1.55}
+.e-field input[type=color]{
+  width:38px;height:30px;padding:2px;border-radius:6px;
+  cursor:pointer;border:1px solid #1e2940;background:#0d1117;
+}
+.e-row{display:flex;gap:8px}
+.e-row .e-field{flex:1}
+
+.gen-btn{
+  width:100%;background:transparent;border:1px dashed #1e2940;color:#475569;
+  border-radius:6px;padding:5px;font-size:.67rem;cursor:pointer;margin-top:3px;
+  transition:all .2s;font-family:'Inter',sans-serif;
+}
+.gen-btn:hover{border-color:#3b82f6;color:#60a5fa;background:rgba(59,130,246,.05)}
+
+.dl-btn{
+  width:100%;background:linear-gradient(135deg,#10b981,#059669);
+  color:#fff;border:none;border-radius:9px;padding:12px;
+  font-size:.85rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 20px rgba(16,185,129,.35);transition:all .2s;
+  font-family:'Inter',sans-serif;margin-top:4px;
+}
+.dl-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(16,185,129,.5)}
+.dl-btn:active{transform:translateY(0)}
+.dl-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ── PREVIEW ── */
+.preview{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;padding:40px 20px 60px;overflow-y:auto;
+}
+.preview-label{
+  font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:#2d4a6a;margin-bottom:20px;
+}
+
+/* ── RECEIPT CARD ── */
+.receipt{
+  width:390px;background:#fff;position:relative;
+  box-shadow:0 24px 80px rgba(0,0,0,.6),0 4px 16px rgba(0,0,0,.4);
+}
+
+/* Serrated edges */
+.serration{height:18px;display:block;flex-shrink:0}
+.serration-top{
+  background:
+    radial-gradient(circle at 9px 18px,#fff 9px,transparent 9px) 0 0/18px 18px repeat-x,
+    #0d1117;
+}
+.serration-bottom{
+  background:
+    radial-gradient(circle at 9px 0px,#fff 9px,transparent 9px) 0 0/18px 18px repeat-x,
+    #0d1117;
+}
+
+/* Receipt body */
+.r-body{padding:22px 24px 20px;background:#fff;position:relative;overflow:hidden}
+
+/* Watermark overlay */
+.r-wm{
+  position:absolute;inset:0;overflow:hidden;pointer-events:none;
+  opacity:.055;
+}
+.r-wm-inner{
+  position:absolute;inset:-60%;
+  display:flex;flex-wrap:wrap;gap:0;
+  transform:rotate(-22deg);
+  width:220%;
+}
+.r-wm span{
+  font-size:1.05rem;font-weight:700;
+  padding:10px 14px;white-space:nowrap;
+  color:#00BFA5;line-height:2;
+}
+
+/* Receipt header */
+.r-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.r-brand{display:flex;align-items:center;gap:7px}
+.r-brand-icon{
+  width:30px;height:30px;border-radius:50%;
+  border:2.5px solid #00BFA5;color:#00BFA5;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:800;line-height:1;
+}
+.r-brand-name{font-size:1.05rem;font-weight:700;color:#111;letter-spacing:-.01em}
+.r-receipt-title{font-size:.82rem;font-weight:500;color:#111}
+
+/* Amount */
+.r-amount{font-size:2.3rem;font-weight:700;color:#00BFA5;text-align:center;line-height:1;letter-spacing:-.02em}
+.r-status{font-size:.95rem;font-weight:500;color:#111;text-align:center;margin-top:6px}
+.r-date{font-size:.75rem;color:#9ca3af;text-align:center;margin-top:3px;margin-bottom:18px}
+
+.status-successful{color:#059669}
+.status-failed{color:#dc2626}
+.status-pending{color:#d97706}
+.status-processing{color:#2563eb}
+
+/* Divider */
+.r-div{
+  border:none;border-top:1.5px dashed #d1d5db;margin:12px 0;
+}
+
+/* Detail rows */
+.r-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:9px 0;gap:12px;
+}
+.r-lbl{font-size:.76rem;color:#9ca3af;font-weight:400;flex-shrink:0;min-width:90px;padding-top:1px}
+.r-val{text-align:right;flex:1;min-width:0}
+.r-val-name{font-size:.8rem;font-weight:700;color:#111;word-break:break-word}
+.r-val-sub{font-size:.72rem;color:#6b7280;margin-top:1px}
+.r-val-mono{font-size:.72rem;color:#111;word-break:break-all;font-variant-numeric:tabular-nums}
+
+/* Footer */
+.r-footer{font-size:.67rem;color:#6b7280;line-height:1.65;margin-top:4px}
+
+/* ── MOBILE ── */
+@media(max-width:780px){
+  body{flex-direction:column}
+  .editor{width:100%;height:auto;border-right:none;border-bottom:1px solid #1e2940}
+  .preview{padding:24px 12px 40px}
+  .receipt{width:100%;max-width:390px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════ EDITOR ════════════ -->
+<aside class="editor">
+  <div class="e-logo">
+    <div class="e-logo-mark">R</div>
+    <div class="e-logo-name">Receipt Gen</div>
+    <div class="e-logo-sub">Live preview</div>
+  </div>
+
+  <!-- Brand -->
+  <div class="e-sec">
+    <div class="e-sec-label">Brand</div>
+    <div class="e-row">
+      <div class="e-field">
+        <label>Brand Name</label>
+        <input type="text" id="eBrand" value="OPay">
+      </div>
+      <div class="e-field" style="max-width:70px">
+        <label>Color</label>
+        <input type="color" id="eBrandColor" value="#00BFA5">
+      </div>
+    </div>
+    <div class="e-field">
+      <label>Receipt Title</label>
+      <input type="text" id="eTitle" value="Transaction Receipt">
+    </div>
+  </div>
+
+  <!-- Transaction -->
+  <div class="e-sec">
+    <div class="e-sec-label">Transaction</div>
+    <div class="e-row">
+      <div class="e-field">
+        <label>Currency</label>
+        <select id="eCurrency">
+          <option value="₦">₦ NGN</option>
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="KSh ">KSh KES</option>
+          <option value="GH₵">GH₵ GHS</option>
+          <option value="R ">R ZAR</option>
+          <option value="E£ ">E£ EGP</option>
+          <option value="₹">₹ INR</option>
+          <option value="AED ">AED</option>
+        </select>
+      </div>
+      <div class="e-field">
+        <label>Amount</label>
+        <input type="text" id="eAmount" value="1,000.00">
+      </div>
+    </div>
+    <div class="e-field">
+      <label>Status</label>
+      <select id="eStatus">
+        <option value="Successful">Successful</option>
+        <option value="Failed">Failed</option>
+        <option value="Pending">Pending</option>
+        <option value="Processing">Processing</option>
+      </select>
+    </div>
+    <div class="e-field">
+      <label>Date &amp; Time</label>
+      <input type="datetime-local" id="eDateTime">
+    </div>
+  </div>
+
+  <!-- Recipient -->
+  <div class="e-sec">
+    <div class="e-sec-label">Recipient Details</div>
+    <div class="e-field">
+      <label>Full Name</label>
+      <input type="text" id="eRName" value="OLANIBOJI YEMI MARY">
+    </div>
+    <div class="e-field">
+      <label>Bank / Platform</label>
+      <input type="text" id="eRBank" value="First Bank Of Nigeria">
+    </div>
+    <div class="e-field">
+      <label>Account Number</label>
+      <input type="text" id="eRAcct" value="3030708827">
+    </div>
+  </div>
+
+  <!-- Sender -->
+  <div class="e-sec">
+    <div class="e-sec-label">Sender Details</div>
+    <div class="e-field">
+      <label>Full Name</label>
+      <input type="text" id="eSName" value="DEBORAH YEMISI OLANIBOJI">
+    </div>
+    <div class="e-field">
+      <label>Platform</label>
+      <input type="text" id="eSPlatform" value="OPay">
+    </div>
+    <div class="e-field">
+      <label>Phone / ID</label>
+      <input type="text" id="eSPhone" value="803****360">
+    </div>
+  </div>
+
+  <!-- Reference Numbers -->
+  <div class="e-sec">
+    <div class="e-sec-label">Reference Numbers</div>
+    <div class="e-field">
+      <label>Transaction No.</label>
+      <input type="text" id="eTxn" value="26061902010058624484242742">
+      <button class="gen-btn" onclick="genId('eTxn',26)">⟳ Generate random</button>
+    </div>
+    <div class="e-field">
+      <label>Session ID</label>
+      <input type="text" id="eSession" value="100004260619071806163008979255">
+      <button class="gen-btn" onclick="genId('eSession',30)">⟳ Generate random</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="e-sec">
+    <div class="e-sec-label">Footer Message</div>
+    <div class="e-field">
+      <textarea id="eFooter">Enjoy a better life with OPay. Get free transfers, withdrawals, bill payments, instant loans, and good annual interest On your savings. OPay is licensed by the Central Bank of Nigeria and insured by the NDIC.</textarea>
+    </div>
+  </div>
+
+  <button class="dl-btn" id="dlBtn" onclick="downloadPDF()">⬇ Download as PDF</button>
+</aside>
+
+<!-- ════════════ PREVIEW ════════════ -->
+<main class="preview">
+  <div class="preview-label">Live Preview</div>
+
+  <div class="receipt" id="receipt">
+    <div class="serration serration-top"></div>
+
+    <div class="r-body">
+      <!-- Watermark -->
+      <div class="r-wm"><div class="r-wm-inner" id="rWM"></div></div>
+
+      <!-- Header -->
+      <div class="r-hd">
+        <div class="r-brand">
+          <div class="r-brand-icon" id="rIcon">↻</div>
+          <span class="r-brand-name" id="rBrand">OPay</span>
+        </div>
+        <div class="r-receipt-title" id="rTitle">Transaction Receipt</div>
+      </div>
+
+      <!-- Amount & status -->
+      <div class="r-amount" id="rAmount">₦1,000.00</div>
+      <div class="r-status status-successful" id="rStatus">Successful</div>
+      <div class="r-date" id="rDate">Jun 19th, 2026 08:18:02</div>
+
+      <hr class="r-div">
+
+      <!-- Recipient -->
+      <div class="r-row">
+        <div class="r-lbl">Recipient Details</div>
+        <div class="r-val">
+          <div class="r-val-name" id="rRName">OLANIBOJI YEMI MARY</div>
+          <div class="r-val-sub" id="rRSub">First Bank Of Nigeria | 3030708827</div>
+        </div>
+      </div>
+
+      <!-- Sender -->
+      <div class="r-row">
+        <div class="r-lbl">Sender Details</div>
+        <div class="r-val">
+          <div class="r-val-name" id="rSName">DEBORAH YEMISI OLANIBOJI</div>
+          <div class="r-val-sub" id="rSSub">OPay | 803****360</div>
+        </div>
+      </div>
+
+      <!-- Transaction No -->
+      <div class="r-row">
+        <div class="r-lbl">Transaction No.</div>
+        <div class="r-val">
+          <div class="r-val-mono" id="rTxn">26061902010058624484242742</div>
+        </div>
+      </div>
+
+      <!-- Session ID -->
+      <div class="r-row">
+        <div class="r-lbl">Session ID</div>
+        <div class="r-val">
+          <div class="r-val-mono" id="rSession">100004260619071806163008979255</div>
+        </div>
+      </div>
+
+      <hr class="r-div" style="margin-top:10px">
+
+      <div class="r-footer" id="rFooter">
+        Enjoy a better life with OPay. Get free transfers, withdrawals, bill payments, instant loans, and good annual interest On your savings. OPay is licensed by the Central Bank of Nigeria and insured by the NDIC.
+      </div>
+    </div>
+
+    <div class="serration serration-bottom"></div>
+  </div>
+</main>
+
+<script>
+const STATUS_CLASS = {
+  Successful:'status-successful',
+  Failed:'status-failed',
+  Pending:'status-pending',
+  Processing:'status-processing'
+};
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  const day = d.getDate();
+  const sf = [,'st','nd','rd'][day%10>3?0:day%10]||'th';
+  const yr = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  const ss = String(d.getSeconds()).padStart(2,'0');
+  return `${M} ${day}${sf}, ${yr} ${hh}:${mm}:${ss}`;
+}
+
+function genId(id, len) {
+  let s = '';
+  for (let i=0;i<len;i++) s += Math.floor(Math.random()*10);
+  document.getElementById(id).value = s;
+  update();
+}
+
+function buildWM(name, color) {
+  const wm = document.getElementById('rWM');
+  wm.innerHTML = '';
+  const count = 80;
+  for (let i=0;i<count;i++) {
+    const s = document.createElement('span');
+    s.textContent = name;
+    s.style.color = color;
+    wm.appendChild(s);
+  }
+}
+
+function applyColor(c) {
+  document.getElementById('rIcon').style.borderColor = c;
+  document.getElementById('rIcon').style.color = c;
+  document.getElementById('rAmount').style.color = c;
+  document.querySelectorAll('#rWM span').forEach(s=>s.style.color=c);
+  // serrations stay dark — correct behavior
+}
+
+function update() {
+  const brand    = document.getElementById('eBrand').value;
+  const color    = document.getElementById('eBrandColor').value;
+  const title    = document.getElementById('eTitle').value;
+  const cur      = document.getElementById('eCurrency').value;
+  const amt      = document.getElementById('eAmount').value;
+  const status   = document.getElementById('eStatus').value;
+  const dt       = document.getElementById('eDateTime').value;
+  const rName    = document.getElementById('eRName').value;
+  const rBank    = document.getElementById('eRBank').value;
+  const rAcct    = document.getElementById('eRAcct').value;
+  const sName    = document.getElementById('eSName').value;
+  const sPlatform= document.getElementById('eSPlatform').value;
+  const sPhone   = document.getElementById('eSPhone').value;
+  const txn      = document.getElementById('eTxn').value;
+  const sess     = document.getElementById('eSession').value;
+  const footer   = document.getElementById('eFooter').value;
+
+  // Brand
+  document.getElementById('rBrand').textContent = brand;
+  document.getElementById('rTitle').textContent = title;
+  buildWM(brand, color);
+  applyColor(color);
+
+  // Amount
+  document.getElementById('rAmount').textContent = cur + amt;
+
+  // Status
+  const el = document.getElementById('rStatus');
+  el.textContent = status;
+  el.className = 'r-status ' + (STATUS_CLASS[status]||'status-successful');
+
+  // Date
+  document.getElementById('rDate').textContent = fmtDate(dt);
+
+  // Recipient
+  document.getElementById('rRName').textContent = rName.toUpperCase();
+  document.getElementById('rRSub').textContent  = rBank + (rAcct ? ' | '+rAcct : '');
+
+  // Sender
+  document.getElementById('rSName').textContent = sName.toUpperCase();
+  document.getElementById('rSSub').textContent  = sPlatform + (sPhone ? ' | '+sPhone : '');
+
+  // IDs
+  document.getElementById('rTxn').textContent    = txn;
+  document.getElementById('rSession').textContent = sess;
+
+  // Footer
+  document.getElementById('rFooter').textContent = footer;
+}
+
+// ── PDF DOWNLOAD ──
+async function downloadPDF() {
+  const btn = document.getElementById('dlBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating PDF…';
+
+  const el = document.getElementById('receipt');
+  try {
+    const canvas = await html2canvas(el, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      onclone: (doc) => {
+        // Force serrations to use black so they print cleanly
+        doc.querySelectorAll('.serration-top').forEach(s => {
+          s.style.background = `
+            radial-gradient(circle at 9px 18px,#fff 9px,transparent 9px) 0 0/18px 18px repeat-x,
+            #111`;
+        });
+        doc.querySelectorAll('.serration-bottom').forEach(s => {
+          s.style.background = `
+            radial-gradient(circle at 9px 0px,#fff 9px,transparent 9px) 0 0/18px 18px repeat-x,
+            #111`;
+        });
+      }
+    });
+
+    const W = el.offsetWidth;
+    const H = el.offsetHeight;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[W,H] });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, W, H);
+
+    const brand = (document.getElementById('eBrand').value||'Receipt').replace(/\s+/g,'-');
+    pdf.save(`${brand}-Receipt.pdf`);
+  } catch(e) {
+    alert('Could not generate PDF — please try again.');
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⬇ Download as PDF';
+}
+
+// ── INIT ──
+function init() {
+  const now = new Date();
+  const local = new Date(now - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('eDateTime').value = local;
+
+  ['eBrand','eBrandColor','eTitle','eCurrency','eAmount','eStatus','eDateTime',
+   'eRName','eRBank','eRAcct','eSName','eSPlatform','eSPhone',
+   'eTxn','eSession','eFooter'
+  ].forEach(id => document.getElementById(id).addEventListener('input', update));
+
+  update();
+}
+
+init();
+</script>
+</body>
+</html>
