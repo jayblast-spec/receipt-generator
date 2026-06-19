@@ -151,6 +151,13 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
   font-size:1.05rem;font-weight:800;line-height:1;
   flex-shrink:0;overflow:hidden;
 }
+/* When a real logo image is shown, switch to a flexible auto-width container */
+.r-brand-icon.has-img{
+  width:auto;max-width:130px;height:40px;
+  border-radius:6px;border:none;background:transparent;
+  padding:0;
+}
+.r-brand-icon.has-img img{width:auto;height:100%;max-width:130px;object-fit:contain;display:block}
 .r-brand-name{font-size:1.05rem;font-weight:700;color:#111;letter-spacing:-.01em}
 .r-receipt-title{font-size:.82rem;font-weight:500;color:#111}
 
@@ -268,7 +275,7 @@ body{display:flex;background:#0d1117;color:#e2e8f0}
     </div>
     <div class="e-field">
       <label>Date &amp; Time</label>
-      <input type="datetime-local" id="eDateTime">
+      <input type="datetime-local" id="eDateTime" step="1">
     </div>
   </div>
 
@@ -483,16 +490,19 @@ function applyColor(c) {
 
 function applyLogo(color) {
   const icon = document.getElementById('rIcon');
+  const brandName = document.getElementById('rBrand');
   if (uploadedLogo) {
-    icon.innerHTML = `<img src="${uploadedLogo}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;display:block">`;
+    icon.innerHTML = `<img src="${uploadedLogo}" alt="logo">`;
+    icon.classList.add('has-img');
     icon.style.border = 'none';
-    icon.style.background = 'transparent';
     icon.style.color = 'transparent';
+    brandName.style.display = 'none';
   } else {
     icon.innerHTML = '↻';
+    icon.classList.remove('has-img');
     icon.style.border = `2.5px solid ${color}`;
     icon.style.color = color;
-    icon.style.background = 'transparent';
+    brandName.style.display = '';
   }
 }
 
