@@ -58,4 +58,4 @@ No env vars needed — works out of the box.
 
 ## 📄 License
 
-MIT © [Joy Ogunleye](https://github.com/jayblast-spec) · Built with [ArkNet Forge](https://arknet-os.vercel.app)
+MIT © [Joy Ogunleye](https://github.com/jayblast-spec) · [ArkNet.digital](https://arknet.digital)
