@@ -4,7 +4,7 @@
 
 **Professional OPay-style transaction receipts — edit, download as PDF, zero backend.**
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit-6366f1?style=for-the-badge)](https://receipt-generator.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit-6366f1?style=for-the-badge)](https://receipt-generator-eosin.vercel.app)
 [![HTML](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![MIT License](https://img.shields.io/badge/License-MIT-34d399?style=for-the-badge)](LICENSE)
 
@@ -32,7 +32,7 @@ cd receipt-generator
 open index.html
 ```
 
-Or visit the [live demo](https://receipt-generator.vercel.app) instantly.
+Or visit the [live demo](https://receipt-generator-eosin.vercel.app) instantly.
 
 ---
 
